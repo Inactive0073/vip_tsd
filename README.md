@@ -8,3 +8,7 @@
 
 # Стек
 Используется SimpleUI в качестве платформы для разработки пользовательского интерфейса. И Python для UI логики.
+
+
+# Figma
+https://www.figma.com/design/i6hLjOJ9rYVQwffqnq4T8T/Vip?node-id=47-970&t=9xO9AkGMGNtLwbq0-0
