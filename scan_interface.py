@@ -120,8 +120,7 @@ class SimpleBaseAdapter:
         """Remove all docs in a collection (helper)."""
         try:
             self._db[collection].clear()
-        except Exception:
-            # fallback: read all and delete individually
+        except Exception: # fallback: read all and delete individually
             try:
                 all_docs = self.all(collection)
                 for d in all_docs:
