@@ -19,19 +19,18 @@ except Exception:
     SimpleBase = None
     DBSession = None
 
-class Keys:
-    # Keys
-    ID_KEY = "_id"
-    BARCODE_KEY = "barcode"
-    NUMBER_KEY = "number"
-    META_KEY = "meta"
-    DATE_KEY = "date"
-    SCAN_NOM = "scan_nom"
-    SCAN_PLAN = "scan_plan"
-    SCAN_FACT = "scan_fact"
+# Keys
+ID_KEY = "_id"
+BARCODE_KEY = "barcode"
+NUMBER_KEY = "number"
+META_KEY = "meta"
+DATE_KEY = "date"
+SCAN_NOM = "scan_nom"
+SCAN_PLAN = "scan_plan"
+SCAN_FACT = "scan_fact"
 
-    # Popup Keys
-    POPUP_RESULT = "action"
+# Popup Keys
+POPUP_RESULT = "action"
 
 
 @dataclass
@@ -44,19 +43,19 @@ class Document:
 
     def to_dict(self):
         return {
-            Keys.BARCODE_KEY: self.barcode,
-            Keys.NUMBER_KEY: self.number,
-            Keys.META_KEY: self.meta,
-            Keys.DATE_KEY: self.date,
+            BARCODE_KEY: self.barcode,
+            NUMBER_KEY: self.number,
+            META_KEY: self.meta,
+            DATE_KEY: self.date,
         }
 
     @classmethod
     def from_dict(cls, data: dict):
         return cls(
-            barcode=data.get(Keys.BARCODE_KEY, "unknown"),
-            number=data.get(Keys.NUMBER_KEY, 0),
-            meta=data.get(Keys.META_KEY, {}),
-            date=data.get(Keys.DATE_KEY, "unknown"),
+            barcode=data.get(BARCODE_KEY, "unknown"),
+            number=data.get(NUMBER_KEY, 0),
+            meta=data.get(META_KEY, {}),
+            date=data.get(DATE_KEY, "unknown"),
         )
 
 # --- SimpleBase adapter (wrap differences) ---
@@ -124,8 +123,8 @@ class SimpleBaseAdapter:
             try:
                 all_docs = self.all(collection)
                 for d in all_docs:
-                    if isinstance(d, dict) and Keys.ID_KEY in d:
-                        self.delete(collection, d[Keys.ID_KEY])
+                    if isinstance(d, dict) and ID_KEY in d:
+                        self.delete(collection, d[ID_KEY])
             except Exception:
                 pass
 
@@ -171,17 +170,17 @@ class ScanSession:
         except Exception:
             # ignore if clear not supported
             pass
-        _id = data.get(Keys.ID_KEY)
-        barcode = data.get(Keys.BARCODE_KEY)
-        number = data.get(Keys.NUMBER_KEY)
-        date = data.get(Keys.DATE_KEY)
+        _id = data.get(ID_KEY)
+        barcode = data.get(BARCODE_KEY)
+        number = data.get(NUMBER_KEY)
+        date = data.get(DATE_KEY)
 
         doc = {
-            Keys.ID_KEY: _id,
-            Keys.BARCODE_KEY: barcode,
-            Keys.NUMBER_KEY: number,
-            Keys.DATE_KEY: date,
-            Keys.META_KEY: meta or {},
+            ID_KEY: _id,
+            BARCODE_KEY: barcode,
+            NUMBER_KEY: number,
+            DATE_KEY: date,
+            META_KEY: meta or {},
             "status": "active"
         }
         self.db.insert(self.COLL_CURRENT_DOC, doc)
@@ -195,7 +194,7 @@ class ScanSession:
 
     def get_active_barcode(self):
         d = self.get_active_doc()
-        return (d.get(Keys.BARCODE_KEY) if d else None)
+        return (d.get(BARCODE_KEY) if d else None)
 
     # --- items ---
     def list_items(self):
@@ -206,10 +205,10 @@ class ScanSession:
         Add scanned code to current items.
         Returns: dict if added, False if duplicate
         """
-        existing = [it.get(Keys.BARCODE_KEY) for it in self.list_items() if isinstance(it, dict)]
+        existing = [it.get(BARCODE_KEY) for it in self.list_items() if isinstance(it, dict)]
         if code in existing:
             return False
-        rec = {Keys.ID_KEY: str(uuid.uuid4()), Keys.BARCODE_KEY: code, Keys.NUMBER_KEY: random.randint(1, 100), Keys.META_KEY: meta or {}, Keys.DATE_KEY: self._now()}
+        rec = {ID_KEY: str(uuid.uuid4()), BARCODE_KEY: code, NUMBER_KEY: random.randint(1, 100), META_KEY: meta or {}, DATE_KEY: self._now()}
         try:
             self.db.insert(self.COLL_CURRENT_ITEMS, rec)
         except Exception as e:
@@ -219,8 +218,8 @@ class ScanSession:
     def remove_scan(self, code):
         items = self.list_items()
         for it in items:
-            if it.get(Keys.BARCODE_KEY) == code:
-                _id = it.get(Keys.ID_KEY)
+            if it.get(BARCODE_KEY) == code:
+                _id = it.get(ID_KEY)
                 if _id:
                     try:
                         self.db.delete(self.COLL_CURRENT_ITEMS, _id)
@@ -238,7 +237,7 @@ class ScanSession:
             return
         try:
             for it in data:
-                rows.append({Keys.ID_KEY: it.get(Keys.ID_KEY), Keys.BARCODE_KEY: it.get(Keys.BARCODE_KEY), Keys.NUMBER_KEY: it.get(Keys.NUMBER_KEY), Keys.DATE_KEY: it.get(Keys.DATE_KEY)})
+                rows.append({ID_KEY: it.get(ID_KEY), BARCODE_KEY: it.get(BARCODE_KEY), NUMBER_KEY: it.get(NUMBER_KEY), DATE_KEY: it.get(DATE_KEY)})
         except Exception as e:
             self._toast(f"Error building table JSON: {e}")
             return
@@ -261,7 +260,7 @@ class ScanSession:
     def build_cards_json_for_docs(self, docs_list, layout=CARDS_LAYOUT):
         rows = []
         for d in docs_list:
-            rows.append({Keys.ID_KEY: d.get(Keys.ID_KEY), Keys.BARCODE_KEY: d.get(Keys.BARCODE_KEY), Keys.NUMBER_KEY: d.get(Keys.NUMBER_KEY), Keys.DATE_KEY: d.get(Keys.DATE_KEY)})
+            rows.append({ID_KEY: d.get(ID_KEY), BARCODE_KEY: d.get(BARCODE_KEY), NUMBER_KEY: d.get(NUMBER_KEY), DATE_KEY: d.get(DATE_KEY)})
         wrapper = {
             "customcards": {
                 "options": {"search_enabled": True},
@@ -277,9 +276,9 @@ class ScanSession:
         """
         Fill the current document information.
         """
-        self.hashMap.put(Keys.SCAN_NOM, doc.get(Keys.BARCODE_KEY, "unknown"))
-        self.hashMap.put(Keys.SCAN_PLAN, doc.get(Keys.NUMBER_KEY, "unknown"))
-        self.hashMap.put(Keys.SCAN_FACT, doc.get(Keys.DATE_KEY, "unknown"))
+        self.hashMap.put(SCAN_NOM, doc.get(BARCODE_KEY, "unknown"))
+        self.hashMap.put(SCAN_PLAN, doc.get(NUMBER_KEY, "unknown"))
+        self.hashMap.put(SCAN_FACT, doc.get(DATE_KEY, "unknown"))
 
     # --- finish / queue ---
     def finish_document(self, try_send=False, endpoint=None):
@@ -296,8 +295,8 @@ class ScanSession:
         items = self.list_items()
         envelope = {
             "doc": {
-                Keys.BARCODE_KEY: doc.get(Keys.BARCODE_KEY),
-                Keys.META_KEY: doc.get(Keys.META_KEY),
+                BARCODE_KEY: doc.get(BARCODE_KEY),
+                META_KEY: doc.get(META_KEY),
                 "started": doc.get("started"),
                 "finished": self._now(),
                 "status": "pending"
@@ -349,7 +348,7 @@ class ScanSession:
                     # mark and move
                     rec["doc"]["status"] = "sent"
                     self.db.insert(self.COLL_SENT, rec)
-                    _id = rec.get(Keys.ID_KEY)
+                    _id = rec.get(ID_KEY)
                     if _id:
                         self.db.delete(self.COLL_PENDING, _id)
                     sent_count += 1
