@@ -12,3 +12,6 @@
 
 # Figma
 https://www.figma.com/design/i6hLjOJ9rYVQwffqnq4T8T/Vip?node-id=47-970&t=9xO9AkGMGNtLwbq0-0
+
+# Схема
+Схема проекта представлена в файле в формате epgz. Открыть можно с помощью [ПО](http://pencil.evolus.vn/Downloads.html). Или просмотреть содержимое в директории картинок.
