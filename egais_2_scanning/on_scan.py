@@ -6,8 +6,8 @@ code = hashMap.get("barcode") # type: ignore
 if code:
     doc = s.add_scan(code)
     if not doc:
-        s.create_dialog("Код уже добавлен", "Удалить старый и добавить заново?", "Отмена")
-        s._speak(f"Код уже существует.")
+        s.create_dialog("ШК уже существует", "Удалить", "Отмена")
+        s._speak(f"Штрихкод уже существует.")
         s._beep_error()
     else:
         hashMap.put("docTable", s.build_table_json_for_items("^DOC_TABLE_ROW")) # type: ignore

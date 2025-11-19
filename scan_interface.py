@@ -22,16 +22,16 @@ except Exception:
 # Keys
 ID_KEY = "_id"
 BARCODE_KEY = "barcode"
-NUMBER_KEY = "number"
+PLAN_KEY = "plan"
+FAKT_KEY = "fakt"
 META_KEY = "meta"
-DATE_KEY = "date"
 SCAN_NOM = "scan_nom"
 SCAN_PLAN = "scan_plan"
 SCAN_FACT = "scan_fact"
 
 # Popup Keys
 POPUP_RESULT = "action"
-
+DIALOG_NAME = "dialog_result"
 
 @dataclass
 class Document:
@@ -44,18 +44,18 @@ class Document:
     def to_dict(self):
         return {
             BARCODE_KEY: self.barcode,
-            NUMBER_KEY: self.number,
+            PLAN_KEY: self.number,
             META_KEY: self.meta,
-            DATE_KEY: self.date,
+            FAKT_KEY: self.date,
         }
 
     @classmethod
     def from_dict(cls, data: dict):
         return cls(
             barcode=data.get(BARCODE_KEY, "unknown"),
-            number=data.get(NUMBER_KEY, 0),
+            number=data.get(PLAN_KEY, 0),
             meta=data.get(META_KEY, {}),
-            date=data.get(DATE_KEY, "unknown"),
+            date=data.get(FAKT_KEY, "unknown"),
         )
 
 # --- SimpleBase adapter (wrap differences) ---
@@ -172,14 +172,14 @@ class ScanSession:
             pass
         _id = data.get(ID_KEY)
         barcode = data.get(BARCODE_KEY)
-        number = data.get(NUMBER_KEY)
-        date = data.get(DATE_KEY)
+        number = data.get(PLAN_KEY)
+        date = data.get(FAKT_KEY)
 
         doc = {
             ID_KEY: _id,
             BARCODE_KEY: barcode,
-            NUMBER_KEY: number,
-            DATE_KEY: date,
+            PLAN_KEY: number,
+            FAKT_KEY: date,
             META_KEY: meta or {},
             "status": "active"
         }
@@ -208,7 +208,7 @@ class ScanSession:
         existing = [it.get(BARCODE_KEY) for it in self.list_items() if isinstance(it, dict)]
         if code in existing:
             return False
-        rec = {ID_KEY: str(uuid.uuid4()), BARCODE_KEY: code, NUMBER_KEY: random.randint(1, 100), META_KEY: meta or {}, DATE_KEY: self._now()}
+        rec = {ID_KEY: str(uuid.uuid4()), BARCODE_KEY: code, PLAN_KEY: random.randint(1, 100), META_KEY: meta or {}, FAKT_KEY: 0}
         try:
             self.db.insert(self.COLL_CURRENT_ITEMS, rec)
         except Exception as e:
@@ -237,7 +237,7 @@ class ScanSession:
             return
         try:
             for it in data:
-                rows.append({ID_KEY: it.get(ID_KEY), BARCODE_KEY: it.get(BARCODE_KEY), NUMBER_KEY: it.get(NUMBER_KEY), DATE_KEY: it.get(DATE_KEY)})
+                rows.append({ID_KEY: it.get(ID_KEY), BARCODE_KEY: it.get(BARCODE_KEY), PLAN_KEY: it.get(PLAN_KEY), FAKT_KEY: it.get(FAKT_KEY)})
         except Exception as e:
             self._toast(f"Error building table JSON: {e}")
             return
@@ -260,7 +260,7 @@ class ScanSession:
     def build_cards_json_for_docs(self, docs_list, layout=CARDS_LAYOUT):
         rows = []
         for d in docs_list:
-            rows.append({ID_KEY: d.get(ID_KEY), BARCODE_KEY: d.get(BARCODE_KEY), NUMBER_KEY: d.get(NUMBER_KEY), DATE_KEY: d.get(DATE_KEY)})
+            rows.append({ID_KEY: d.get(ID_KEY), BARCODE_KEY: d.get(BARCODE_KEY), PLAN_KEY: d.get(PLAN_KEY), FAKT_KEY: d.get(FAKT_KEY)})
         wrapper = {
             "customcards": {
                 "options": {"search_enabled": True},
@@ -277,8 +277,8 @@ class ScanSession:
         Fill the current document information.
         """
         self.hashMap.put(SCAN_NOM, doc.get(BARCODE_KEY, "unknown"))
-        self.hashMap.put(SCAN_PLAN, doc.get(NUMBER_KEY, "unknown"))
-        self.hashMap.put(SCAN_FACT, doc.get(DATE_KEY, "unknown"))
+        self.hashMap.put(SCAN_PLAN, doc.get(PLAN_KEY, "unknown"))
+        self.hashMap.put(SCAN_FACT, doc.get(FAKT_KEY, "unknown"))
 
     # --- finish / queue ---
     def finish_document(self, try_send=False, endpoint=None):
@@ -357,7 +357,7 @@ class ScanSession:
                 pass
         return {"attempted": attempted, "sent": sent_count}
 
-    def create_dialog(self, title: str, approve_btn: str, cancel_btn: str, listener_name: str = "dialog_result") -> None:
+    def create_dialog(self, title: str, approve_btn: str, cancel_btn: str, listener_name: str = DIALOG_NAME) -> None:
         """Создает диалоговое окно для дальнейшего взаимодействия"""
         self.hashMap.put("ShowDialogStyle", json.dumps({"title": title, "yes": approve_btn, "no": cancel_btn}))
         self.hashMap.put("ShowDialogListener", listener_name)
